@@ -1,17 +1,27 @@
 import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/models/User";
 import bcrypt from "bcryptjs";
-
 import { sendVerificationEmail } from "@/helpers/sendVarificationEmail";
 
 export async function POST(request: Request) {
   await dbConnect();
   try {
+    // wrong way -: When you use "form-data" the information is sent as multipart/form-data and not as application/json. The error you get is because you are trying to parse JSON data in your route. But the data it received isn't in JSON format.
+
     const { username, email, password } = await request.json();
+
+    // console.log("Parsed request data", { username, email, password });
+
     const existingUserVerifiedByUsername = await UserModel.findOne({
       username,
       isVerified: true,
     });
+
+    // console.log(
+    //   "existingUserVerifiedByUsername",
+    //   existingUserVerifiedByUsername
+    // );
+
     if (existingUserVerifiedByUsername) {
       return Response.json(
         {
@@ -29,30 +39,30 @@ export async function POST(request: Request) {
     const existingUserEmail = await UserModel.findOne({
       email,
     });
+
     if (existingUserEmail) {
       if (existingUserEmail.isVerified) {
-        return Response.json(
-          {
+        return new Response(
+          JSON.stringify({
             success: false,
             message: "email already exist",
-          },
+          }),
           {
             status: 400,
           }
         );
       } else {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password as string, 10);
         existingUserEmail.password = hashedPassword;
         existingUserEmail.verifyCode = verifyCode;
         existingUserEmail.verigyCodeExpiry = new Date(Date.now() + 3600000);
         await existingUserEmail.save();
       }
     } else {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const expiryDate = new Date();
-      expiryDate.setHours(expiryDate.getHours() + 1);
-      const newUser = new UserModel();
-      ({
+      const hashedPassword = await bcrypt.hash(password as string, 10);
+      const expiryDate = new Date(Date.now() + 3600000);
+      // expiryDate.setHours(expiryDate.getHours() + 1);
+      const newUser = new UserModel({
         username,
         email,
         password: hashedPassword,
@@ -67,9 +77,9 @@ export async function POST(request: Request) {
 
     //send verification email
     const emailResponse = await sendVerificationEmail(
-      email,
-      username,
-      verifyCode
+      email as string,
+      username as string,
+      verifyCode as string
     );
 
     if (!emailResponse.success)

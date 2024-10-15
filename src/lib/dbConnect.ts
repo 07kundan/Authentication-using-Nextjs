@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
-import { object } from "zod";
 
 type ConnectionObject = {
-  isConnected?: number;
+  isConnected?: number | null;
 };
 
-const connection: ConnectionObject = {};
+const connection: ConnectionObject = {
+  isConnected: null,
+};
 
 async function dbConnect(): Promise<void> {
   if (connection.isConnected) {
@@ -14,7 +15,7 @@ async function dbConnect(): Promise<void> {
   }
 
   try {
-    const db = await mongoose.connect(process.env.MONGO_URI || "", {});
+    const db = await mongoose.connect(process.env.MONGODB_URI || "", {});
     // console.log(db);
     // console.log(db.connections)
     connection.isConnected = db.connections[0].readyState;

@@ -13,7 +13,6 @@ import { ApiResponse } from "@/types/ApiResponse";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -28,7 +27,7 @@ const page = () => {
   const [usernameMessage, setUsernameMessage] = useState("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const debounced = useDebounceCallback(setUsername, 300);
+  const debounced = useDebounceCallback(setUsername, 500);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -43,21 +42,22 @@ const page = () => {
 
   useEffect(() => {
     const checkUsernameValid = async () => {
+      console.log(username);
       if (username) {
         setIsCheckingUsername(true);
         setUsernameMessage(""); //reseting message
 
         try {
+          console.log("trying");
           const response = await axios.get<ApiResponse>(
-            `/api/check-usernmae-unique?username=${username}`
+            `/api/check-username-unique?username=${username}`
           );
           console.log("axiosresponse", response);
           setUsernameMessage(response?.data.message);
         } catch (error) {
+          console.log(error);
           const axiosError = error as AxiosError<ApiResponse>;
-          setUsernameMessage(
-            axiosError.response?.data.message ?? "Error checking username"
-          );
+          setUsernameMessage(axiosError.message || "Error checking username");
         } finally {
           setIsCheckingUsername(false);
         }
@@ -103,6 +103,7 @@ const page = () => {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-800">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
@@ -135,7 +136,7 @@ const page = () => {
                   {!isCheckingUsername && usernameMessage && (
                     <p
                       className={`text-sm ${
-                        usernameMessage === "Username is unique"
+                        usernameMessage === "username is available"
                           ? "text-green-500"
                           : "text-red-500"
                       }`}

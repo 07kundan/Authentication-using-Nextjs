@@ -4,7 +4,7 @@ import { getToken } from "next-auth/jwt";
 
 // It'll determine in which path middleware will run
 export const config = {
-  matcher: ["/sign-in", "/sign-up", "/", "/dashboad/:path*", "/verify/:path*"],
+  matcher: ["/sign-in", "/sign-up", "/", "/dashboard/:path*", "/verify/:path*"],
 };
 
 export async function middleware(request: NextRequest) {

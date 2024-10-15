@@ -16,6 +16,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials: any): Promise<any> {
         dbConnect();
+        console.log("user credentials", credentials);
         try {
           const user = await UserModel.findOne({
             $or: [
@@ -23,8 +24,9 @@ export const authOptions: NextAuthOptions = {
               { username: credentials.identifier },
             ],
           });
+          console.log("user data from backend", user);
           if (!user) {
-            throw new Error("Invalid email");
+            throw new Error("Invalid identifier");
           }
           if (!user.isVerified) {
             throw new Error("user is not verified");
